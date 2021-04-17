@@ -5,10 +5,10 @@
 
 using namespace sf;
 
-const int M = 20;
-const int N = 10;
+constexpr int RowsNum = 20;
+constexpr int ColumnsNum = 10;
 
-int field[M][N] = {0};
+int field[RowsNum][ColumnsNum] = {0};
 
 struct Point {
   int x, y;
@@ -30,14 +30,14 @@ unsigned score = 0;
 
 bool check() {
   for (int i = 0; i < 4; i++) {
-    if (a[i].x < 0 || a[i].x >= N || a[i].y >= M) {
-      return 0;
+    if (a[i].x < 0 || a[i].x >= ColumnsNum || a[i].y >= RowsNum) {
+      return false;
     }
     if (field[a[i].y][a[i].x]) {
-      return 0;
+      return false;
     }
   }
-  return 1;
+  return true;
 };
 
 int main() {
@@ -50,7 +50,7 @@ int main() {
   t2.loadFromFile("images/background.png");
   t3.loadFromFile("images/frame.png");
 
-  Sprite s(t1), background(t2), frame(t3);
+  Sprite tiles_sprite(t1), background(t2), frame(t3);
 
   int dx = 0;
   bool rotate = 0;
@@ -78,15 +78,23 @@ int main() {
 
       if (e.type == Event::GainedFocus) pause = false;
 
-      if (e.type == Event::KeyPressed)
-        if (e.key.code == Keyboard::Escape)
-          escapeButtonStatus = !escapeButtonStatus;
-        else if (e.key.code == Keyboard::Up)
-          rotate = true;
-        else if (e.key.code == Keyboard::Left)
-          dx = -1;
-        else if (e.key.code == Keyboard::Right)
-          dx = 1;
+      if (e.type == Event::KeyPressed) {
+        switch (e.key.code) {
+          case Keyboard::Escape:
+            escapeButtonStatus = !escapeButtonStatus;
+            break;
+          case Keyboard::Up:
+            rotate = true;
+            break;
+          case Keyboard::Left:
+            dx = -1;
+            break;
+          case Keyboard::Right:
+            dx = 1;
+            break;
+          default:;
+        }
+      }
     }
 
     if (pause || escapeButtonStatus) continue;
@@ -140,16 +148,16 @@ int main() {
     }
 
     ///////check lines//////////
-    int k = M - 1;
-    for (int i = M - 1; i > 0; i--) {
+    int k = RowsNum - 1;
+    for (int i = RowsNum - 1; i > 0; i--) {
       int count = 0;
-      for (int j = 0; j < N; j++) {
+      for (int j = 0; j < ColumnsNum; j++) {
         if (field[i][j]) {
           count++;
         }
         field[k][j] = field[i][j];
       }
-      if (count < N) {
+      if (count < ColumnsNum) {
         k--;
       } else {
         // increase user's score
@@ -157,7 +165,7 @@ int main() {
       }
     }
     if (k != 0) {
-      std::fill(field[0], field[0] + (N * (k + 1)), 0);
+      std::fill(field[0], field[0] + (ColumnsNum * (k + 1)), 0);
     }
 
     dx = 0;
@@ -168,20 +176,20 @@ int main() {
     window.clear(Color::White);
     window.draw(background);
 
-    for (int i = 0; i < M; i++)
-      for (int j = 0; j < N; j++) {
+    for (int i = 0; i < RowsNum; i++)
+      for (int j = 0; j < ColumnsNum; j++) {
         if (field[i][j] == 0) continue;
-        s.setTextureRect(IntRect(field[i][j] * 18, 0, 18, 18));
-        s.setPosition(j * 18, i * 18);
-        s.move(28, 31);  // offset
-        window.draw(s);
+        tiles_sprite.setTextureRect(IntRect(field[i][j] * 18, 0, 18, 18));
+        tiles_sprite.setPosition(j * 18, i * 18);
+        tiles_sprite.move(28, 31);  // offset
+        window.draw(tiles_sprite);
       }
 
     for (int i = 0; i < 4; i++) {
-      s.setTextureRect(IntRect(colorNum * 18, 0, 18, 18));
-      s.setPosition(a[i].x * 18, a[i].y * 18);
-      s.move(28, 31);  // offset
-      window.draw(s);
+      tiles_sprite.setTextureRect(IntRect(colorNum * 18, 0, 18, 18));
+      tiles_sprite.setPosition(a[i].x * 18, a[i].y * 18);
+      tiles_sprite.move(28, 31);  // offset
+      window.draw(tiles_sprite);
     }
 
     window.draw(frame);
