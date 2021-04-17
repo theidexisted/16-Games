@@ -12,7 +12,7 @@ int field[RowsNum][ColumnsNum] = {0};
 
 struct Point {
   int x, y;
-} a[4], b[4];
+} next_pos[4], tmp_pos[4];
 
 int figures[7][4] = {
     1, 3, 5, 7,  // I
@@ -30,10 +30,11 @@ unsigned score = 0;
 
 bool check() {
   for (int i = 0; i < 4; i++) {
-    if (a[i].x < 0 || a[i].x >= ColumnsNum || a[i].y >= RowsNum) {
+    if (next_pos[i].x < 0 || next_pos[i].x >= ColumnsNum ||
+        next_pos[i].y >= RowsNum) {
       return false;
     }
-    if (field[a[i].y][a[i].x]) {
+    if (field[next_pos[i].y][next_pos[i].x]) {
       return false;
     }
   }
@@ -62,8 +63,8 @@ int main() {
   {
     const int firstFigure = rand() % 7;
     for (int i = 0; i < 4; i++) {
-      a[i].x = figures[firstFigure][i] % 2;
-      a[i].y = figures[firstFigure][i] / 2;
+      next_pos[i].x = figures[firstFigure][i] % 2;
+      next_pos[i].y = figures[firstFigure][i] / 2;
     }
   }
 
@@ -103,40 +104,41 @@ int main() {
 
     //// <- Move -> ///
     for (int i = 0; i < 4; i++) {
-      b[i] = a[i];
-      a[i].x += dx;
+      tmp_pos[i] = next_pos[i];
+      next_pos[i].x += dx;
     }
     if (!check())
-      for (int i = 0; i < 4; i++) a[i] = b[i];
+      for (int i = 0; i < 4; i++) next_pos[i] = tmp_pos[i];
 
     //////Rotate//////
     if (rotate) {
-      Point p = a[1];  // center of rotation
+      Point p = next_pos[1];  // center of rotation
       for (int i = 0; i < 4; i++) {
-        int x = a[i].y - p.y;
-        int y = a[i].x - p.x;
-        a[i].x = p.x - x;
-        a[i].y = p.y + y;
+        int x = next_pos[i].y - p.y;
+        int y = next_pos[i].x - p.x;
+        next_pos[i].x = p.x - x;
+        next_pos[i].y = p.y + y;
       }
       if (!check())
-        for (int i = 0; i < 4; i++) a[i] = b[i];
+        for (int i = 0; i < 4; i++) next_pos[i] = tmp_pos[i];
     }
 
     ///////Tick//////
     if (timer > delay) {
       for (int i = 0; i < 4; i++) {
-        b[i] = a[i];
-        a[i].y += 1;
+        tmp_pos[i] = next_pos[i];
+        next_pos[i].y += 1;
       }
 
       if (!check()) {
-        for (int i = 0; i < 4; i++) field[b[i].y][b[i].x] = colorNum;
+        for (int i = 0; i < 4; i++)
+          field[tmp_pos[i].y][tmp_pos[i].x] = colorNum;
 
         colorNum = 1 + rand() % 7;
         int n = rand() % 7;
         for (int i = 0; i < 4; i++) {
-          a[i].x = figures[n][i] % 2;
-          a[i].y = figures[n][i] / 2;
+          next_pos[i].x = figures[n][i] % 2;
+          next_pos[i].y = figures[n][i] / 2;
         }
         if (!check()) {
           window.close();
@@ -187,7 +189,7 @@ int main() {
 
     for (int i = 0; i < 4; i++) {
       tiles_sprite.setTextureRect(IntRect(colorNum * 18, 0, 18, 18));
-      tiles_sprite.setPosition(a[i].x * 18, a[i].y * 18);
+      tiles_sprite.setPosition(next_pos[i].x * 18, next_pos[i].y * 18);
       tiles_sprite.move(28, 31);  // offset
       window.draw(tiles_sprite);
     }
